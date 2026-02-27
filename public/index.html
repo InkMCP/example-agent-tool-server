@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Tool Server</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a; color: #ededed; min-height: 100vh;
+      padding: 4rem 1.5rem;
+    }
+    .container { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .subtitle { color: #888; margin-bottom: 2rem; }
+    .section { margin-bottom: 2.5rem; }
+    h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; }
+    .tool-card {
+      background: #1a1a1a; border: 1px solid #333; border-radius: 0.75rem;
+      padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .tool-name { font-weight: 600; margin-bottom: 0.25rem; }
+    .tool-desc { color: #888; font-size: 0.875rem; margin-bottom: 1rem; }
+    .form-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    input[type="text"] {
+      flex: 1; padding: 0.5rem 0.75rem; background: #0a0a0a;
+      border: 1px solid #333; border-radius: 0.375rem; color: #ededed;
+      font-size: 0.875rem; outline: none;
+    }
+    input:focus { border-color: #555; }
+    input::placeholder { color: #555; }
+    button {
+      padding: 0.5rem 1rem; background: #ededed; color: #0a0a0a;
+      border: none; border-radius: 0.375rem; font-size: 0.875rem;
+      font-weight: 500; cursor: pointer; white-space: nowrap;
+    }
+    button:hover { background: #d4d4d4; }
+    .result {
+      background: #0a0a0a; border: 1px solid #222; border-radius: 0.375rem;
+      padding: 0.75rem; font-family: monospace; font-size: 0.8125rem;
+      color: #aaa; white-space: pre-wrap; max-height: 200px; overflow-y: auto;
+    }
+    .endpoint {
+      font-family: monospace; font-size: 0.8125rem; color: #555;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Agent Tool Server</h1>
+    <p class="subtitle">REST API tools for AI agents</p>
+
+    <div class="section">
+      <h2>Available Tools</h2>
+
+      <div class="tool-card">
+        <div class="tool-name">Search</div>
+        <div class="tool-desc">Search for information on a topic</div>
+        <div class="endpoint">POST /tools/search</div>
+        <div class="form-row">
+          <input type="text" id="searchQuery" placeholder='Try: "machine learning"' />
+          <button onclick="runSearch()">Search</button>
+        </div>
+        <div class="result" id="searchResult">Results will appear here...</div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-name">Calculate</div>
+        <div class="tool-desc">Perform basic math calculations</div>
+        <div class="endpoint">POST /tools/calculate</div>
+        <div class="form-row">
+          <input type="text" id="calcExpression" placeholder='Try: "42 * 3.14"' />
+          <button onclick="runCalculate()">Calculate</button>
+        </div>
+        <div class="result" id="calcResult">Results will appear here...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function runSearch() {
+      const query = document.getElementById('searchQuery').value;
+      if (!query) return;
+      const el = document.getElementById('searchResult');
+      el.textContent = 'Searching...';
+      try {
+        const res = await fetch('/tools/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+        el.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        el.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    async function runCalculate() {
+      const expression = document.getElementById('calcExpression').value;
+      if (!expression) return;
+      const el = document.getElementById('calcResult');
+      el.textContent = 'Calculating...';
+      try {
+        const res = await fetch('/tools/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expression })
+        });
+        const data = await res.json();
+        el.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        el.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('searchQuery').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runSearch();
+    });
+    document.getElementById('calcExpression').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runCalculate();
+    });
+  </script>
+</body>
+</html>
